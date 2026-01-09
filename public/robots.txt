@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://astrofy-template.netlify.app/sitemap-index.xml
+# Mustafa Sahin - QA Engineer Portfolio
+# Hosted on Android Phone 📱
