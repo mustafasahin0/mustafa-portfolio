@@ -9,6 +9,9 @@ export default defineConfig({
   output: 'server',
   adapter: node({ mode: 'standalone' }),
   integrations: [mdx(), sitemap(), tailwind()],
+  image: {
+    service: { entrypoint: 'astro/assets/services/noop' }
+  },
   server: {
     host: '0.0.0.0',
     port: 4321
