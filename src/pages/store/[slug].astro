@@ -3,6 +3,8 @@ import { CollectionEntry, getCollection } from "astro:content";
 import { StoreSchema } from "../../content/config";
 import StoreItemLayout from "../../layouts/StoreItemLayout.astro";
 
+export const prerender = true;
+
 export async function getStaticPaths() {
   const itemEntries = await getCollection("store");
   return itemEntries.map((entry) => ({

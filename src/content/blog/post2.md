@@ -1,16 +1,99 @@
 ---
-title: "Demo Post 2"
-description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
-pubDate: "Sep 11 2022"
+title: "API Testing Best Practices with REST Assured"
+description: "Learn how to implement effective API testing strategies using REST Assured framework for comprehensive backend validation."
+pubDate: "Dec 15 2023"
 heroImage: "/post_img.webp"
+tags: ["api-testing", "rest-assured", "java"]
 ---
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Vitae ultricies leo integer malesuada nunc vel risus commodo viverra. Adipiscing enim eu turpis egestas pretium. Euismod elementum nisi quis eleifend quam adipiscing. In hac habitasse platea dictumst vestibulum. Sagittis purus sit amet volutpat. Netus et malesuada fames ac turpis egestas. Eget magna fermentum iaculis eu non diam phasellus vestibulum lorem. Varius sit amet mattis vulputate enim. Habitasse platea dictumst quisque sagittis. Integer quis auctor elit sed vulputate mi. Dictumst quisque sagittis purus sit amet.
+## Why API Testing Matters
 
-Morbi tristique senectus et netus. Id semper risus in hendrerit gravida rutrum quisque non tellus. Habitasse platea dictumst quisque sagittis purus sit amet. Tellus molestie nunc non blandit massa. Cursus vitae congue mauris rhoncus. Accumsan tortor posuere ac ut. Fringilla urna porttitor rhoncus dolor. Elit ullamcorper dignissim cras tincidunt lobortis. In cursus turpis massa tincidunt dui ut ornare lectus. Integer feugiat scelerisque varius morbi enim nunc. Bibendum neque egestas congue quisque egestas diam. Cras ornare arcu dui vivamus arcu felis bibendum. Dignissim suspendisse in est ante in nibh mauris. Sed tempus urna et pharetra pharetra massa massa ultricies mi.
+API testing is a critical component of modern software testing strategies. While UI tests verify the user experience, API tests ensure that the backend logic, data handling, and integrations work correctly.
 
-Mollis nunc sed id semper risus in. Convallis a cras semper auctor neque. Diam sit amet nisl suscipit. Lacus viverra vitae congue eu consequat ac felis donec. Egestas integer eget aliquet nibh praesent tristique magna sit amet. Eget magna fermentum iaculis eu non diam. In vitae turpis massa sed elementum. Tristique et egestas quis ipsum suspendisse ultrices. Eget lorem dolor sed viverra ipsum. Vel turpis nunc eget lorem dolor sed viverra. Posuere ac ut consequat semper viverra nam. Laoreet suspendisse interdum consectetur libero id faucibus. Diam phasellus vestibulum lorem sed risus ultricies tristique. Rhoncus dolor purus non enim praesent elementum facilisis. Ultrices tincidunt arcu non sodales neque. Tempus egestas sed sed risus pretium quam vulputate. Viverra suspendisse potenti nullam ac tortor vitae purus faucibus ornare. Fringilla urna porttitor rhoncus dolor purus non. Amet dictum sit amet justo donec enim.
+## Getting Started with REST Assured
 
-Mattis ullamcorper velit sed ullamcorper morbi tincidunt. Tortor posuere ac ut consequat semper viverra. Tellus mauris a diam maecenas sed enim ut sem viverra. Venenatis urna cursus eget nunc scelerisque viverra mauris in. Arcu ac tortor dignissim convallis aenean et tortor at. Curabitur gravida arcu ac tortor dignissim convallis aenean et tortor. Egestas tellus rutrum tellus pellentesque eu. Fusce ut placerat orci nulla pellentesque dignissim enim sit amet. Ut enim blandit volutpat maecenas volutpat blandit aliquam etiam. Id donec ultrices tincidunt arcu. Id cursus metus aliquam eleifend mi.
+REST Assured is a Java library that simplifies REST API testing. It provides a domain-specific language (DSL) for writing powerful and maintainable API tests.
 
-Tempus quam pellentesque nec nam aliquam sem. Risus at ultrices mi tempus imperdiet. Id porta nibh venenatis cras sed felis eget velit. Ipsum a arcu cursus vitae. Facilisis magna etiam tempor orci eu lobortis elementum. Tincidunt dui ut ornare lectus sit. Quisque non tellus orci ac. Blandit libero volutpat sed cras. Nec tincidunt praesent semper feugiat nibh sed pulvinar proin gravida. Egestas integer eget aliquet nibh praesent tristique magna.
+### Basic Test Structure
+
+```java
+@Test
+public void testGetUser() {
+    given()
+        .baseUri("https://api.example.com")
+        .header("Authorization", "Bearer " + token)
+    .when()
+        .get("/users/123")
+    .then()
+        .statusCode(200)
+        .body("username", equalTo("testuser"))
+        .body("email", containsString("@example.com"));
+}
+```
+
+## Key Testing Areas
+
+### 1. Response Validation
+
+- Verify status codes (200, 201, 400, 404, 500, etc.)
+- Validate response body structure and content
+- Check response headers and content types
+
+### 2. Data Integrity
+
+- Ensure data persistence across operations
+- Verify CRUD operations work correctly
+- Test data validation and error handling
+
+### 3. Security Testing
+
+- Validate authentication and authorization
+- Test for common vulnerabilities (SQL injection, XSS)
+- Verify proper error messages (no sensitive data leakage)
+
+### 4. Performance Testing
+
+- Measure response times
+- Test rate limiting
+- Verify behavior under load
+
+## Advanced Techniques
+
+### Request Specifications
+
+Create reusable request specifications to avoid repetition:
+
+```java
+RequestSpecification requestSpec = new RequestSpecBuilder()
+    .setBaseUri("https://api.example.com")
+    .setContentType(ContentType.JSON)
+    .addHeader("Authorization", "Bearer " + token)
+    .build();
+```
+
+### Schema Validation
+
+Validate JSON responses against predefined schemas to ensure consistency:
+
+```java
+given()
+    .spec(requestSpec)
+.when()
+    .get("/users/123")
+.then()
+    .body(matchesJsonSchemaInClasspath("user-schema.json"));
+```
+
+## Integration with CI/CD
+
+API tests are perfect for CI/CD pipelines because they're:
+- Fast to execute
+- Independent of UI changes
+- Easy to parallelize
+- Reliable and stable
+
+## Conclusion
+
+API testing is an essential skill for modern QA engineers. With REST Assured, you can create comprehensive, maintainable, and efficient API test suites that catch bugs early and ensure your backend services work flawlessly.
+
+Happy testing!

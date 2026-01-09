@@ -9,10 +9,14 @@
     "start": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "kill": "pkill -9 node; pkill -f cloudflared;",
+    "clean": "rm -rf dist .astro node_modules/.vite",
+    "live": "npm run build && npm run preview & sleep 30 && cloudflared tunnel --no-autoupdate run --url http://localhost:4321 pixel8"
   },
   "dependencies": {
     "@astrojs/mdx": "^2.0.3",
+    "@astrojs/node": "^8.3.3",
     "@astrojs/rss": "^3.0.0",
     "@astrojs/sitemap": "^3.0.1",
     "@astrojs/tailwind": "^5.0.3",
