@@ -25,6 +25,43 @@ function formatUptime(seconds: number): string {
   return parts.join(' ') || '< 1m';
 }
 
+// Get CPU core count from /proc/cpuinfo (works on Android/Termux)
+function getCpuCoreCount(): number {
+  try {
+    const cpuinfo = fs.readFileSync('/proc/cpuinfo', 'utf8');
+    const processors = cpuinfo.match(/^processor\s*:/gm);
+    if (processors && processors.length > 0) {
+      return processors.length;
+    }
+  } catch {}
+  
+  // Fallback to os.cpus() 
+  const cpus = os.cpus();
+  if (cpus.length > 0) return cpus.length;
+  
+  // Default for Pixel 7 (Tensor G2 has 8 cores)
+  return 8;
+}
+
+// Get CPU model name
+function getCpuModel(): string {
+  try {
+    const cpuinfo = fs.readFileSync('/proc/cpuinfo', 'utf8');
+    // Look for "Hardware" line on Android
+    const hardwareMatch = cpuinfo.match(/^Hardware\s*:\s*(.+)$/m);
+    if (hardwareMatch) return hardwareMatch[1].trim();
+    
+    // Fallback to model name
+    const modelMatch = cpuinfo.match(/^model name\s*:\s*(.+)$/m);
+    if (modelMatch) return modelMatch[1].trim();
+  } catch {}
+  
+  const cpus = os.cpus();
+  if (cpus[0]?.model) return cpus[0].model;
+  
+  return 'Google Tensor G2';
+}
+
 // Try to read CPU temperature (Android/Termux specific)
 function getCpuTemperature(): number | null {
   const thermalPaths = [
@@ -99,12 +136,14 @@ export const GET: APIRoute = async () => {
   const usedMem = totalMem - freeMem;
   const memUsagePercent = Math.round((usedMem / totalMem) * 100);
   
-  const cpus = os.cpus();
   const loadAvg = os.loadavg();
   const uptime = os.uptime();
   
+  // Get CPU info (works on Android/Termux)
+  const cpuCount = getCpuCoreCount();
+  const cpuModel = getCpuModel();
+  
   // Calculate CPU usage percentage (rough estimate based on load average)
-  const cpuCount = cpus.length;
   const cpuUsagePercent = Math.min(100, Math.round((loadAvg[0] / cpuCount) * 100));
   
   const cpuTemp = getCpuTemperature();
@@ -124,7 +163,7 @@ export const GET: APIRoute = async () => {
       usagePercent: memUsagePercent,
     },
     cpu: {
-      model: cpus[0]?.model || 'Unknown',
+      model: cpuModel,
       cores: cpuCount,
       usagePercent: cpuUsagePercent,
       loadAvg: loadAvg.map(l => l.toFixed(2)),
