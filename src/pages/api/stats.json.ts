@@ -137,7 +137,9 @@ export const GET: APIRoute = async () => {
   const memUsagePercent = Math.round((usedMem / totalMem) * 100);
   
   const loadAvg = os.loadavg();
-  const uptime = os.uptime();
+  
+  // Use process.uptime() for Node.js server uptime (not phone uptime)
+  const uptime = process.uptime();
   
   // Get CPU info (works on Android/Termux)
   const cpuCount = getCpuCoreCount();
