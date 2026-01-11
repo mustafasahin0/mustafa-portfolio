@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import os from 'os';
 import fs from 'fs';
+import { execSync } from 'child_process';
 
 // Helper to format bytes to human readable
 function formatBytes(bytes: number): string {
@@ -45,27 +46,51 @@ function getCpuTemperature(): number | null {
 
 // Get battery info (Android/Termux specific)
 function getBatteryInfo(): { level: number | null; charging: boolean | null } {
+  let level: number | null = null;
+  let charging: boolean | null = null;
+  
+  // Method 1: Try termux-battery-status command (requires Termux:API)
   try {
-    // Try to read battery level
-    const levelPath = '/sys/class/power_supply/battery/capacity';
-    const statusPath = '/sys/class/power_supply/battery/status';
-    
-    let level: number | null = null;
-    let charging: boolean | null = null;
-    
-    try {
-      level = parseInt(fs.readFileSync(levelPath, 'utf8').trim());
-    } catch {}
-    
-    try {
-      const status = fs.readFileSync(statusPath, 'utf8').trim().toLowerCase();
-      charging = status === 'charging' || status === 'full';
-    } catch {}
-    
+    const output = execSync('termux-battery-status', { 
+      timeout: 3000,
+      encoding: 'utf8',
+      stdio: ['pipe', 'pipe', 'pipe']
+    });
+    const batteryData = JSON.parse(output);
+    level = batteryData.percentage ?? batteryData.level;
+    charging = batteryData.status === 'CHARGING' || batteryData.status === 'FULL';
     return { level, charging };
   } catch {
-    return { level: null, charging: null };
+    // termux-battery-status not available, try fallback
   }
+  
+  // Method 2: Try reading from /sys filesystem
+  const batteryPaths = [
+    '/sys/class/power_supply/battery/capacity',
+    '/sys/class/power_supply/BAT0/capacity',
+  ];
+  
+  const statusPaths = [
+    '/sys/class/power_supply/battery/status',
+    '/sys/class/power_supply/BAT0/status',
+  ];
+  
+  for (const path of batteryPaths) {
+    try {
+      level = parseInt(fs.readFileSync(path, 'utf8').trim());
+      break;
+    } catch {}
+  }
+  
+  for (const path of statusPaths) {
+    try {
+      const status = fs.readFileSync(path, 'utf8').trim().toLowerCase();
+      charging = status === 'charging' || status === 'full';
+      break;
+    } catch {}
+  }
+  
+  return { level, charging };
 }
 
 export const GET: APIRoute = async () => {
