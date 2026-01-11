@@ -1,0 +1,159 @@
+---
+// Server-side: Initial stats fetch
+let initialStats = null;
+try {
+  const response = await fetch(new URL('/api/stats.json', Astro.url));
+  if (response.ok) {
+    initialStats = await response.json();
+  }
+} catch (e) {
+  console.error('Failed to fetch initial stats:', e);
+}
+---
+
+<div class="phone-stats-widget my-8" id="phone-stats">
+  <div class="card bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 shadow-2xl border border-slate-700/50 overflow-hidden">
+    <!-- Animated background effect -->
+    <div class="absolute inset-0 opacity-30">
+      <div class="absolute top-0 left-1/4 w-72 h-72 bg-emerald-500/20 rounded-full blur-3xl animate-pulse"></div>
+      <div class="absolute bottom-0 right-1/4 w-72 h-72 bg-cyan-500/20 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
+    </div>
+    
+    <div class="card-body relative z-10 p-6">
+      <!-- Header -->
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-3">
+          <div class="relative">
+            <div class="text-4xl">📱</div>
+            <div class="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full animate-pulse shadow-lg shadow-emerald-400/50" id="status-indicator"></div>
+          </div>
+          <div>
+            <h3 class="font-bold text-xl text-white">Live Server Stats</h3>
+            <p class="text-slate-400 text-sm" id="device-name">
+              {initialStats?.device?.name || 'Loading...'} • Running on Android
+            </p>
+          </div>
+        </div>
+        <div class="badge badge-outline text-emerald-400 border-emerald-400/50 gap-1">
+          <span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
+          LIVE
+        </div>
+      </div>
+      
+      <!-- Stats Grid -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <!-- Memory Usage -->
+        <div class="stat-card bg-slate-800/60 rounded-xl p-4 border border-slate-700/50 backdrop-blur-sm hover:border-cyan-500/50 transition-all duration-300">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-lg">💾</span>
+            <span class="text-slate-400 text-xs font-medium uppercase tracking-wider">Memory</span>
+          </div>
+          <div class="text-2xl font-bold text-white" id="mem-percent">
+            {initialStats?.memory?.usagePercent ?? '--'}%
+          </div>
+          <div class="text-xs text-slate-500 mt-1" id="mem-detail">
+            {initialStats ? `${initialStats.memory.used} / ${initialStats.memory.total}` : 'Loading...'}
+          </div>
+          <div class="w-full bg-slate-700 rounded-full h-1.5 mt-2">
+            <div 
+              class="bg-gradient-to-r from-cyan-500 to-cyan-400 h-1.5 rounded-full transition-all duration-500" 
+              id="mem-bar"
+              style={`width: ${initialStats?.memory?.usagePercent ?? 0}%`}
+            ></div>
+          </div>
+        </div>
+        
+        <!-- CPU Load -->
+        <div class="stat-card bg-slate-800/60 rounded-xl p-4 border border-slate-700/50 backdrop-blur-sm hover:border-emerald-500/50 transition-all duration-300">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-lg">⚡</span>
+            <span class="text-slate-400 text-xs font-medium uppercase tracking-wider">CPU Load</span>
+          </div>
+          <div class="text-2xl font-bold text-white" id="cpu-percent">
+            {initialStats?.cpu?.usagePercent ?? '--'}%
+          </div>
+          <div class="text-xs text-slate-500 mt-1" id="cpu-detail">
+            {initialStats ? `${initialStats.cpu.cores} cores` : 'Loading...'}
+          </div>
+          <div class="w-full bg-slate-700 rounded-full h-1.5 mt-2">
+            <div 
+              class="bg-gradient-to-r from-emerald-500 to-emerald-400 h-1.5 rounded-full transition-all duration-500" 
+              id="cpu-bar"
+              style={`width: ${initialStats?.cpu?.usagePercent ?? 0}%`}
+            ></div>
+          </div>
+        </div>
+        
+        <!-- Uptime -->
+        <div class="stat-card bg-slate-800/60 rounded-xl p-4 border border-slate-700/50 backdrop-blur-sm hover:border-purple-500/50 transition-all duration-300">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-lg">⏱️</span>
+            <span class="text-slate-400 text-xs font-medium uppercase tracking-wider">Uptime</span>
+          </div>
+          <div class="text-2xl font-bold text-white" id="uptime">
+            {initialStats?.system?.uptime ?? '--'}
+          </div>
+          <div class="text-xs text-slate-500 mt-1">
+            Server running time
+          </div>
+        </div>
+        
+        <!-- Battery (if available) -->
+        <div class="stat-card bg-slate-800/60 rounded-xl p-4 border border-slate-700/50 backdrop-blur-sm hover:border-amber-500/50 transition-all duration-300">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-lg" id="battery-icon">🔋</span>
+            <span class="text-slate-400 text-xs font-medium uppercase tracking-wider">Battery</span>
+          </div>
+          <div class="text-2xl font-bold text-white" id="battery-percent">
+            {initialStats?.battery?.level != null ? `${initialStats.battery.level}%` : 'N/A'}
+          </div>
+          <div class="text-xs text-slate-500 mt-1" id="battery-status">
+            {initialStats?.battery?.charging ? '⚡ Charging' : 'On battery'}
+          </div>
+          <div class="w-full bg-slate-700 rounded-full h-1.5 mt-2">
+            <div 
+              class="bg-gradient-to-r from-amber-500 to-amber-400 h-1.5 rounded-full transition-all duration-500" 
+              id="battery-bar"
+              style={`width: ${initialStats?.battery?.level ?? 0}%`}
+            ></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Footer with timestamp -->
+      <div class="flex items-center justify-between mt-6 pt-4 border-t border-slate-700/50">
+        <div class="flex items-center gap-2 text-slate-400 text-xs">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span>Refreshes on page reload</span>
+        </div>
+        <div class="text-slate-500 text-xs" id="last-update">
+          Snapshot: {initialStats ? new Date(initialStats.timestamp).toLocaleTimeString() : '--'}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .stat-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.3);
+  }
+  
+  .phone-stats-widget {
+    position: relative;
+  }
+  
+  /* Glow effect on hover */
+  .card:hover .absolute.opacity-30 > div {
+    opacity: 0.4;
+  }
+</style>
+
+<!-- No client-side JavaScript needed - stats are fetched server-side on page load -->
